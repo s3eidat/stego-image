@@ -1,0 +1,20 @@
+.sg-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+@media (max-width: 820px) { .sg-grid { grid-template-columns: minmax(0, 1fr); } }
+.sg-grid > .card { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.sg-grid .drop { min-height: 260px; }
+.sg-prev { display: grid; place-items: center; padding: 12px; border-radius: 12px; border: 1px solid var(--line); }
+.sg-prev canvas { display: block; max-width: 100%; max-height: 340px; width: auto; height: auto; border-radius: 6px; }
+.field .faint { font-weight: 500; }
+.sg-pw { flex-wrap: nowrap; gap: 6px; }
+.sg-pw .input { min-width: 0; flex: 1; }
+.sg-meter { height: 10px; margin-top: 6px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.sg-meter span { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--accent); transition: width 200ms var(--ease), background var(--dur); }
+.sg-meter span.warn { background: var(--warn); }
+.sg-meter span.bad { background: var(--danger); }
+.sg-result { padding: 12px 14px; border-radius: 12px; font-size: 13.5px; font-weight: 550; }
+.sg-result.ok { background: var(--accent-soft); color: var(--accent); }
+.sg-result.bad { background: var(--danger-soft); color: var(--danger); }
+#rStatus { justify-self: start; white-space: normal; }
+#out { min-height: 180px; }
+.sg-help ul { margin: 0; padding-left: 20px; color: var(--text-2); display: grid; gap: 8px; }
+.sg-help b { color: var(--text); }

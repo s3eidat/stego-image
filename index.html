@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; media-src 'self' data: blob:; connect-src 'self' data: blob:; worker-src 'self' blob:; manifest-src 'self'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Stego Image — Hide a Secret Message in an Image (with AES encryption) | S3eidat Tools</title>
+<meta name="description" content="Hide a text message inside a PNG image with LSB steganography, optionally encrypted with a password (AES-256-GCM). Reveal it again later. Free, private, runs entirely in your browser.">
+<meta property="og:title" content="Stego Image — hide a secret message inside an image">
+<meta property="og:description" content="LSB steganography with optional AES-256-GCM encryption. Runs 100% in your browser.">
+<meta property="og:image" content="screenshot.png">
+<link rel="icon" href="kit/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="kit/kit.css">
+<link rel="stylesheet" href="app.css">
+<script src="kit/kit.js"></script>
+</head>
+<body data-tool="stego-image">
+<main class="s3-main">
+  <section class="s3-hero">
+    <h1>Stego Image</h1>
+    <p>Hide a text message inside the pixels of an image, optionally locked with a password. The picture looks the same; only this tool (and the password) gets the message back.</p>
+  </section>
+
+  <div class="seg" id="mode" role="group" aria-label="Mode">
+    <button aria-pressed="true" data-v="hide">Hide a message</button>
+    <button aria-pressed="false" data-v="reveal">Reveal a message</button>
+  </div>
+
+  <div id="hide" class="sg-grid mt">
+    <section class="card stack">
+      <h2>1. Cover image</h2>
+      <label class="drop" id="hDrop">
+        <input type="file" accept="image/*" hidden>
+        <svg class="i"><use href="#i-image"/></svg>
+        <b>Drop an image or click to choose</b>
+        <span class="faint">Any image works. The result is always a PNG.</span>
+      </label>
+      <div id="hInfo" class="stack" hidden>
+        <div class="sg-prev checker"><canvas id="hCv" aria-label="Cover image preview"></canvas></div>
+        <div class="row between"><span class="faint" id="hMeta"></span><button class="btn ghost small" id="hNew">Change image</button></div>
+      </div>
+    </section>
+    <section class="card stack">
+      <h2>2. Secret message</h2>
+      <label class="field">Message
+        <textarea class="textarea prose" id="msg" dir="auto" rows="6" placeholder="Type the message to hide…"></textarea>
+      </label>
+      <label class="field"><span>Password <span class="faint">(optional, recommended)</span></span>
+        <span class="row sg-pw"><input class="input" id="hPw" type="password" autocomplete="new-password" placeholder="Leave empty to hide without encryption"><button class="btn icon" id="hShow" type="button" aria-label="Show password" title="Show password">👁</button></span>
+      </label>
+      <p class="faint" id="cryptoNote">With a password the message is encrypted with AES-256-GCM (key from PBKDF2-SHA256, 600,000 rounds, random salt). Without one, anyone using a steganography tool can read it.</p>
+      <div>
+        <div class="row between"><span class="faint">Capacity</span><span class="faint" id="capLbl">Choose an image first</span></div>
+        <div class="sg-meter" role="progressbar" aria-label="Capacity used" aria-valuemin="0" aria-valuemax="100" id="meter"><span id="meterFill"></span></div>
+      </div>
+      <button class="btn primary big" id="hideBtn" disabled><svg class="i"><use href="#i-lock"/></svg>Hide message &amp; download PNG</button>
+      <div class="sg-result" id="hResult" hidden></div>
+    </section>
+  </div>
+
+  <div id="reveal" class="sg-grid mt" hidden>
+    <section class="card stack">
+      <h2>1. Image with a hidden message</h2>
+      <label class="drop" id="rDrop">
+        <input type="file" accept="image/png,image/*" hidden>
+        <svg class="i"><use href="#i-upload"/></svg>
+        <b>Drop the PNG here or click to choose</b>
+        <span class="faint">Use the original PNG file, not a screenshot or a re-sent copy.</span>
+      </label>
+      <div id="rInfo" class="stack" hidden>
+        <div class="sg-prev checker"><canvas id="rCv" aria-label="Image preview"></canvas></div>
+        <div class="row between"><span class="faint" id="rMeta"></span><button class="btn ghost small" id="rNew">Change image</button></div>
+      </div>
+    </section>
+    <section class="card stack">
+      <h2>2. Message</h2>
+      <span class="chip" id="rStatus">Waiting for an image</span>
+      <label class="field" id="rPwWrap" hidden><span>Password</span>
+        <span class="row sg-pw"><input class="input" id="rPw" type="password" autocomplete="current-password" placeholder="The password used when hiding"><button class="btn primary" id="unlock">Unlock</button></span>
+      </label>
+      <textarea class="textarea prose" id="out" dir="auto" rows="8" readonly placeholder="The hidden message appears here." aria-label="Revealed message"></textarea>
+      <div class="row"><button class="btn" id="copyOut" disabled><svg class="i"><use href="#i-copy"/></svg>Copy message</button></div>
+    </section>
+  </div>
+
+  <section class="card mt sg-help">
+    <h2>Before you share it</h2>
+    <ul>
+      <li><b>Send the PNG as a file.</b> Apps that recompress photos (WhatsApp, Instagram, Facebook, X, most chat apps when sent as a "photo") convert to JPEG or resize, and that <b>destroys the hidden message</b>. Email attachments, cloud drives, or "send as document" keep it.</li>
+      <li><b>Never convert it to JPEG</b>, crop, resize, or edit it. Any change to the pixels breaks the message.</li>
+      <li><b>Hidden is not invisible to experts.</b> This uses the least significant bit of each colour value, which forensic tools can detect. Use a password: then even if someone finds the data, they can't read it.</li>
+      <li>Some privacy-focused browsers (Brave, Safari private mode) add noise to images read by pages. The tool checks its own output and will tell you if your browser did this.</li>
+    </ul>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
